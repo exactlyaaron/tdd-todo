@@ -9,11 +9,14 @@ var Mongo = require('mongodb');
 var app = require('../../app/app');
 var request = require('supertest');  //simulates browser
 var traceur = require('traceur');
+
 var User;
+var sue;
+
 
 describe('User', function(){
   before(function(done){
-    request(app)
+    request(app)   //causes db and routes to initialize
     .get('/')
     .end(function(){
       User = traceur.require(__dirname + '/../../app/models/user.js');
@@ -22,9 +25,9 @@ describe('User', function(){
   });
 
   beforeEach(function(done){
-    console.log('BEFORE EACH DROP');
     global.nss.db.collection('users').drop(function(){
-      User.register({email:'sue@aol.com', password:'abcd'}, function(){
+      User.register({email:'sue@aol.com', password:'abcd'}, function(u){
+        sue = u;
         done();
       });
     });
@@ -66,6 +69,24 @@ describe('User', function(){
 
     it('should NOT successfully login a user - wrong password', function(done){
       User.login({email:'sue@aol.com', password:'wrong'}, function(u){
+        expect(u).to.be.null;
+        done();
+      });
+    });
+  });
+
+  describe('.findByUserId', function(){
+    it('should return a user with proper credentials', function(done){
+      var userIdString = sue._id.toString();
+      User.findByUserId(userIdString, function(u){
+        expect(u).to.be.an.instanceof(User);
+        expect(u.email).to.equal(sue.email);
+        done();
+      });
+    });
+
+    it('should not return a user', function(done){
+      User.findByUserId('wrongsss', function(u){
         expect(u).to.be.null;
         done();
       });

@@ -3,8 +3,8 @@
 
 var bcrypt = require('bcrypt');
 var users = global.nss.db.collection('users');
-// var Mongo = require('mongodb');
-// var _ = require('lodash');
+var Mongo = require('mongodb');
+var _ = require('lodash');
 
 class User{
 
@@ -35,6 +35,19 @@ class User{
       }
     });
   }
+
+  static findByUserId(id, fn){
+    if(id.length !== 24){fn(null); return;}
+
+    var userId = Mongo.ObjectID(id);
+    users.findOne({_id: userId}, (e,u)=>{
+      if(u !== null){
+        u = _.create(User.prototype, u);
+      }
+      fn(u);
+    });
+  }
+  
 
 }
 
