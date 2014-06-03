@@ -70,7 +70,6 @@ describe('User', function(){
         done();
       });
     });
-
   });
 
 });
